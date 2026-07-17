@@ -40,6 +40,4 @@ Il progetto è stato sviluppato per essere **estremamente leggero, portabile e p
 
 Non è necessaria alcuna installazione (`npm`, `node`, o server di database). Il gioco funziona interamente nel browser.
 
-1. Clona questo repository:
-   ```bash
-   git clone [https://github.com/tuo-username/bias-clinic.git](https://github.com/tuo-username/bias-clinic.git)
+Clicca qui per giocare(https://nicolagentili.github.io/the_bias_game/the_bias_game.html)
