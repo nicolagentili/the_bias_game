@@ -1,6 +1,6 @@
 # 🧬 Bias Clinic: The Healthcare AI Game
 
-![Bias Clinic Banner]([https://via.placeholder.com/1200x400/020617/34d399?text=BIAS+CLINIC:+Healthcare+Data+%26+AI+Simulation](https://placehold.co/1200x400/020617/34d399/png?text=BIAS+CLINIC:+Healthcare+Data+%26+AI+Simulation))
+![Bias Clinic Banner](https://placehold.co/1200x400/020617/34d399/png?text=BIAS+CLINIC:+Healthcare+Data+%26+AI+Simulation)
 
 **Bias Clinic** è uno strumento di simulazione interattivo e un *serious game* progettato per esplorare in modo scientifico come i pregiudizi umani, le asimmetrie nei dati e i vincoli delle codifiche mediche standard (OMOP, FHIR, ICD) si riflettono sullo sviluppo dell'Intelligenza Artificiale in sanità.
 
