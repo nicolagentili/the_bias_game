@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bias Clinic: The Healthcare AI Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #020617; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen lg:h-screen lg:overflow-hidden flex flex-col custom-scroll">
+
+    <!-- SPLASH SCREEN / LANDING BOX -->
+    <div id="splash-screen" class="fixed inset-0 z-50 bg-slate-950/95 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 md:p-8 shadow-2xl flex flex-col gap-6 max-h-[95vh] overflow-y-auto custom-scroll">
+            <div class="text-center border-b border-slate-800 pb-4">
+                <h1 class="text-4xl font-extrabold text-emerald-400 tracking-tight flex items-center justify-center gap-3">
+                    🧬 BIAS CLINIC
+                </h1>
+                <p class="text-sm text-orange-400 uppercase tracking-widest font-semibold mt-3">Healthcare Data & AI Simulation Tool</p>
+            </div>
+            
+            <div class="text-slate-200 text-sm space-y-4 leading-relaxed">
+                <p>
+                    Benvenuti in <strong>Bias Clinic</strong>, uno strumento interattivo per esplorare in modo scientifico come i pregiudizi umani e le asimmetrie nei dati si riflettono sullo sviluppo dell'Intelligenza Artificiale in sanità.
+                </p>
+            </div>
+
+            <!-- PANNELLO IMPOSTAZIONI (GAME MASTER) -->
+            <div class="bg-slate-950 p-5 rounded-xl border border-slate-700 shadow-inner">
+                <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-4 border-b border-slate-800 pb-2 flex items-center gap-2">
+                    <span>⚙️</span> Impostazioni Regole di Gioco
+                </h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1">Punti Iniziali</label>
+                        <input type="number" id="set-initial" value="100" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1 text-orange-400">Obiettivo (0=Inf)</label>
+                        <input type="number" id="set-target" value="300" class="w-full bg-orange-950/30 border border-orange-500/50 rounded p-2 text-sm text-orange-200 focus:border-orange-500 outline-none text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1">Premio Ruota</label>
+                        <input type="number" id="set-wheel-win" value="5" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1">Penalità Ruota</label>
+                        <input type="number" id="set-wheel-loss" value="5" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1">Premio Difesa</label>
+                        <input type="number" id="set-scen-win" value="15" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1">Penalità Difesa</label>
+                        <input type="number" id="set-scen-loss" value="10" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1">Costo Min Carta</label>
+                        <input type="number" id="set-card-min" value="2" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 font-bold mb-1">Costo Max Carta</label>
+                        <input type="number" id="set-card-max" value="9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-emerald-500 outline-none text-center font-mono">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CITAZIONE CASUALE -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-orange-500/20 italic text-center shrink-0">
+                <p id="random-quote" class="text-sm text-slate-300 leading-relaxed">"Caricamento citazione..."</p>
+                <span id="random-quote-author" class="text-xs text-orange-400 block mt-2 font-mono not-italic font-semibold"></span>
+            </div>
+
+            <button onclick="startGameSetup()" class="w-full shrink-0 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-900/20 tracking-widest uppercase text-sm">
+                Salva Impostazioni e Inizia
+            </button>
+        </div>
+    </div>
+
+    <!-- MODALE ELIMINAZIONE SQUADRA -->
+    <div id="elimination-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-red-500/50 rounded-2xl max-w-lg w-full p-8 shadow-2xl flex flex-col gap-6 text-center">
+            <span class="text-5xl">💀</span>
+            <h2 class="text-2xl font-black text-slate-100">Squadra Eliminata!</h2>
+            <p class="text-slate-300 text-sm">La squadra <span id="elimination-modal-team-name" class="font-bold text-red-400"></span> ha esaurito i punti ed è fuori dal gioco.</p>
+            <div class="flex flex-col gap-3 mt-2">
+                <button onclick="continueGameAfterElimination()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-bold py-4 rounded-xl transition text-sm">Continua con le altre squadre</button>
+                <button onclick="endGameAndShowLeaderboard()" class="bg-red-950/40 hover:bg-red-900/40 text-red-400 border border-red-500/30 font-bold py-4 rounded-xl transition text-sm uppercase tracking-wider">Termina e Mostra Classifica</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE CLASSIFICA FINALE -->
+    <div id="leaderboard-modal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-emerald-500/50 rounded-2xl max-w-xl w-full p-8 shadow-2xl flex flex-col gap-6 text-center">
+            <span class="text-6xl">🏆</span>
+            <h2 class="text-3xl font-black text-emerald-400 uppercase tracking-widest">Classifica Finale</h2>
+            
+            <div id="leaderboard-list" class="flex flex-col gap-3 mt-2 text-left max-h-[50vh] overflow-y-auto custom-scroll pr-2">
+                <!-- Generato dinamicamente -->
+            </div>
+            
+            <button onclick="location.reload()" class="mt-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-900/20 uppercase tracking-widest text-sm">
+                Inizia Nuova Partita
+            </button>
+        </div>
+    </div>
+
+    <!-- IL GUARDIANO DEI BIAS - FINESTRA MODALE IN PRIMO PIANO AD ALTO CONTRASTO -->
+    <div id="wheel-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-50 text-slate-900 border border-slate-300 rounded-2xl max-w-5xl w-full p-6 md:p-10 shadow-2xl flex flex-col gap-8 relative overflow-y-auto max-h-[95vh] custom-scroll">
+            
+            <!-- INFORMAZIONI INTESTAZIONE SQUADRA ATTIVA -->
+            <div class="text-center border-b border-slate-200 pb-4">
+                <div class="text-2xl font-black text-slate-900">
+                    Squadra <span id="modal-team-name" class="text-emerald-600">--</span>, è il tuo turno!
+                </div>
+                <div class="text-sm font-bold uppercase tracking-wider text-slate-600 mt-2">
+                    Risorse attuali: <span id="modal-team-score" class="text-orange-600 font-mono font-black text-lg bg-orange-100 px-2 rounded ml-1">--</span>
+                </div>
+                <a href="https://en.wikipedia.org/wiki/List_of_cognitive_biases" target="_blank" class="text-xs text-emerald-700 hover:text-emerald-600 hover:underline mt-2 inline-block font-mono tracking-tight font-bold">
+                    🌐 Esplora il framework "Cognitive Bias Codex" 🔗
+                </a>
+            </div>
+
+            <!-- CONTENT WRAPPER 1: LA RUOTA DELLA FORTUNA -->
+            <div id="modal-wheel-wrapper" class="flex flex-col items-center justify-center py-6 relative w-full overflow-hidden min-h-[380px]">
+                
+                <div id="wheel-stopped-title" class="text-2xl md:text-3xl font-black text-orange-600 text-center mb-6 min-h-[40px] transition-all duration-300 opacity-0 tracking-wide uppercase px-4 max-w-xl"></div>
+
+                <div id="floating-biases" class="absolute inset-0 pointer-events-none z-40"></div>
+
+                <div class="relative z-10 shrink-0">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[24px] border-l-transparent border-r-transparent border-t-orange-600 z-20 drop-shadow-md"></div>
+                    
+                    <div class="w-72 h-72 rounded-full shadow-2xl bg-slate-300 overflow-hidden relative border-[6px] border-slate-400">
+                        <svg viewBox="0 0 100 100" class="w-full h-full shadow-inner" id="svg-wheel" style="transform: rotate(0deg);"></svg>
+                        
+                        <button onclick="spinTheWheel()" id="spin-btn" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-orange-600 hover:bg-orange-500 text-white font-black text-sm uppercase rounded-full tracking-wider shadow-2xl flex items-center justify-center border-[3px] border-slate-100 transition duration-150 active:scale-95 z-30 text-center leading-none">
+                            GIRA
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-8 max-w-md">
+                    <span class="flex items-center gap-1.5 text-xs text-slate-700 font-medium"><span class="w-3 h-3 rounded-full inline-block" style="background:#0e7490"></span>Sovraccarico Info</span>
+                    <span class="flex items-center gap-1.5 text-xs text-slate-700 font-medium"><span class="w-3 h-3 rounded-full inline-block" style="background:#7c2d12"></span>No Significato</span>
+                    <span class="flex items-center gap-1.5 text-xs text-slate-700 font-medium"><span class="w-3 h-3 rounded-full inline-block" style="background:#b45309"></span>Agire in Fretta</span>
+                    <span class="flex items-center gap-1.5 text-xs text-slate-700 font-medium"><span class="w-3 h-3 rounded-full inline-block" style="background:#4c1d95"></span>Limiti Memoria</span>
+                </div>
+            </div>
+            
+            <!-- CONTENT WRAPPER 2: IL QUIZ COMPLETO -->
+            <div id="quiz-zone" class="w-full hidden flex flex-col gap-6">
+                <div class="border-l-[6px] border-orange-500 pl-5 space-y-5">
+                    <div>
+                        <span class="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1 block">Bias Estratto:</span>
+                        <h3 id="quiz-bias-name" class="text-2xl font-black text-slate-900 leading-tight">Nome Bias</h3>
+                    </div>
+                    
+                    <div class="text-sm text-slate-700 leading-relaxed">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">Definizione Scientifica:</span>
+                        <p id="bias-description" class="text-slate-700"></p>
+                    </div>
+
+                    <div class="bg-slate-200/60 border border-slate-300 rounded-xl p-4 text-sm leading-relaxed">
+                        <span class="text-xs font-bold uppercase tracking-wider text-orange-600 block mb-1">Scenario Clinico di Studio:</span>
+                        <p id="bias-case" class="text-slate-800 italic"></p>
+                    </div>
+
+                    <div class="border-t border-slate-300 pt-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">Quesito Logico:</span>
+                        <p id="bias-question" class="text-base text-slate-900 font-bold leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <div id="quiz-instruction-line" class="pl-5 mt-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                    <p class="text-sm font-bold text-emerald-700 animate-pulse flex items-center gap-2">
+                        <span>👉</span> Scegli la risposta per superare il bias
+                    </p>
+                    <div class="text-[11px] font-mono font-bold bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-300">
+                        RISPOSTA ESATTA: <span id="lbl-wheel-win" class="text-emerald-600">-- PT</span> | ERRATA: <span id="lbl-wheel-loss" class="text-orange-600">-- PT</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 pl-5" id="quiz-options-container"></div>
+
+                <div id="quiz-feedback-result" class="grid grid-cols-1 gap-4 pl-5 hidden mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER GIOCO -->
+    <header class="bg-slate-900 border-b border-slate-800 p-5 shadow-lg shrink-0">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-emerald-400 flex items-center gap-3">
+                    🧬 Bias Clinic <span class="text-xs bg-orange-500/10 text-orange-400 px-2 py-1 rounded border border-orange-500/20 font-mono tracking-widest uppercase">v4.0 Modal Focus</span>
+                </h1>
+            </div>
+            <div id="game-status" class="text-sm bg-slate-950 px-5 py-2.5 rounded-lg border border-slate-800 text-slate-300 font-mono shadow-inner">
+                Stato: <span class="text-orange-400 font-bold uppercase tracking-wider">Configurazione</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- INTERFACCIA PRINCIPALE -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-0">
+        
+        <!-- SIDEBAR SQUADRE -->
+        <div class="lg:col-span-1 bg-slate-900 rounded-2xl p-5 border border-slate-800 flex flex-col gap-5 shadow-lg h-full min-h-0">
+            <h2 class="text-base font-bold uppercase tracking-wider text-slate-300 border-b border-slate-700 pb-3 shrink-0">👥 Squadre</h2>
+            <div class="flex flex-col gap-3 shrink-0">
+                <input type="text" id="team-name-input" placeholder="Nome Squadra..." class="bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-sm w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-200 transition">
+                <button onclick="addTeam()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 px-4 py-2.5 rounded-lg text-sm font-bold transition shadow-md">Aggiungi</button>
+            </div>
+            
+            <div id="teams-list" class="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0 custom-scroll pr-2 mt-2">
+                <p class="text-sm text-slate-400 italic text-center py-6">Nessuna squadra inserita.</p>
+            </div>
+            <hr class="border-slate-800 mt-auto shrink-0">
+            <button onclick="runTeamRaffle()" id="start-game-btn" class="w-full bg-orange-600 hover:bg-orange-500 text-slate-950 py-3.5 rounded-xl font-bold text-sm transition disabled:opacity-30 disabled:cursor-not-allowed uppercase tracking-wider shadow-lg shadow-orange-900/20 shrink-0" disabled>
+                🚀 AVVIA IL GIOCO
+            </button>
+        </div>
+
+        <!-- TABELLONE CENTRALE -->
+        <div class="lg:col-span-3 flex flex-col gap-2 h-full min-h-0">
+            
+            <!-- NAVIGAZIONE TABS -->
+            <div id="tabs-navigation" class="flex gap-2 border-b border-slate-800 pb-0 hidden shrink-0">
+                <button id="tab-btn-scenario" onclick="switchTab('scenario')" class="px-6 py-3 rounded-t-xl bg-slate-800 text-emerald-400 font-bold text-sm transition border border-slate-700 border-b-0 shadow-sm">
+                    📝 1. Analisi Scenario
+                </button>
+                <button id="tab-btn-workspace" onclick="switchTab('workspace')" class="px-6 py-3 rounded-t-xl bg-slate-950 text-slate-500 hover:text-slate-300 font-bold text-sm transition border border-transparent">
+                    🃏 2. Carte Mitigazione
+                </button>
+            </div>
+
+            <!-- CONTENUTO TAB 1: SCENARIO -->
+            <div id="tab-content-scenario" class="pt-4 flex-1 flex flex-col min-h-0">
+                <div id="scenario-card" class="bg-slate-900 rounded-2xl p-6 md:p-8 border border-slate-800 shadow-lg flex flex-col gap-6 h-full min-h-0">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-5 gap-4 shrink-0">
+                        <div>
+                            <span id="scen-type" class="text-xs font-bold bg-orange-500/10 text-orange-400 px-3 py-1 rounded-md border border-orange-500/20 uppercase tracking-wider inline-block mb-2">Tipologia</span>
+                            <h2 id="scen-title" class="text-2xl font-bold text-white leading-tight">Avvia il gioco per caricare lo scenario clinico ed estrarre la prima squadra</h2>
+                        </div>
+                        <div id="scen-standard" class="text-xs text-emerald-400 font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-700 whitespace-nowrap">Standard: --</div>
+                    </div>
+
+                    <div id="scen-content" class="text-slate-200 text-sm flex-col gap-6 hidden flex-1 min-h-0 overflow-y-auto custom-scroll pr-2">
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">🚀 La Missione</h3>
+                            <p id="scen-mission" class="text-base leading-relaxed text-slate-300"></p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-950 p-5 rounded-xl border border-slate-800 shadow-inner">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-2">📊 Dettaglio Dataset</h3>
+                                <p id="scen-dataset" class="text-sm whitespace-pre-line font-mono text-slate-300 leading-relaxed"></p>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-2">📋 Criteri Clinici</h3>
+                                <p id="scen-criteria" class="text-sm whitespace-pre-line font-mono text-slate-300 leading-relaxed"></p>
+                            </div>
+                        </div>
+                        <div class="bg-orange-950/20 border border-orange-900/40 p-5 rounded-xl mt-auto shrink-0">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-2">⚠️ L'Insidia dello Standard (Coding Bias)</h3>
+                            <p id="scen-coding" class="text-base leading-relaxed text-slate-300"></p>
+                        </div>
+                    </div>
+                    <div id="scen-placeholder" class="text-center text-slate-400 text-sm py-10 italic flex-1 flex items-center justify-center">In attesa dell'avvio...</div>
+                </div>
+            </div>
+
+            <!-- CONTENUTO TAB 2: WORKSPACE -->
+            <div id="tab-content-workspace" class="hidden pt-4 flex-1 flex flex-col min-h-0">
+                <div id="workspace" class="grid grid-cols-1 md:grid-cols-2 gap-8 opacity-20 pointer-events-none transition-opacity duration-500 h-full min-h-0">
+                    
+                    <!-- BOX MITIGAZIONI -->
+                    <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg flex flex-col h-full min-h-0">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4 shrink-0">
+                            <h3 class="text-sm font-bold uppercase tracking-widest text-emerald-400">🃏 3. Scegli le Carte Mitigazione</h3>
+                        </div>
+                        <div id="mitigation-deck" class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto custom-scroll pr-2"></div>
+                    </div>
+
+                    <!-- BOX AUDIT -->
+                    <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-lg flex flex-col h-full min-h-0 gap-6">
+                        <div class="flex flex-col flex-1 min-h-0 overflow-y-auto custom-scroll pr-2">
+                            <h3 class="text-sm font-bold uppercase tracking-widest text-orange-400 border-b border-slate-700 pb-3 mb-4 shrink-0">⚖️ 4. Valuta la tua Difesa</h3>
+                            <div id="attack-zone" class="bg-slate-950 rounded-xl p-5 border border-slate-800 text-center py-8 flex-1 flex flex-col items-center justify-center shrink-0">
+                                <button onclick="launchAttack()" class="bg-orange-950/60 text-orange-400 border border-orange-500/40 hover:bg-orange-900/60 font-bold text-sm uppercase px-6 py-3 rounded-lg tracking-wider transition shadow-md">🔥 VALUTA</button>
+                            </div>
+                            <div id="mitigation-feedback" class="mt-4 hidden shrink-0"></div>
+                        </div>
+                        <div class="flex flex-wrap justify-end gap-3 border-t border-slate-700 pt-4 shrink-0">
+                            <button id="btn-resolve-win" onclick="resolveTurn(true)" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-sm px-4 py-2.5 rounded-lg transition shadow-md flex-1 md:flex-none text-center">Difesa Approvata</button>
+                            <button id="btn-resolve-loss" onclick="resolveTurn(false)" class="bg-orange-600 hover:bg-orange-500 text-slate-950 font-bold text-sm px-4 py-2.5 rounded-lg transition shadow-md flex-1 md:flex-none text-center">Respinta</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ==========================================
+        // CONFIGURAZIONE IMPOSTAZIONI GLOBALI
+        // ==========================================
+        let GAME_SETTINGS = {
+            initialScore: 100,
+            targetScore: 300,
+            wheelWin: 5,
+            wheelLoss: 5,
+            scenarioWin: 15,
+            scenarioLoss: 10,
+            cardCostMin: 2,
+            cardCostMax: 9
+        };
+
+        const WHEEL_TIMINGS = {
+            spinDuration: 4800,         
+            floatingSpawnRate: 120,     
+            floatingStopDelay: 4000,    
+            quizRevealDelay: 3000       
+        };
+        
+        const WHEEL_BOUNDARIES = {
+            leftAreaMinX: 10,        
+            leftAreaMaxX: 20,       
+            rightAreaMinRight: 10,   
+            rightAreaMaxRight: 20,  
+            minY: 15,               
+            maxY: 65                
+        };
+        
+        const quotesPool = [
+            { text: "La cecità ai propri bias è il bias più pericoloso di tutti.", author: "Daniel Kahneman" },
+            { text: "Il vero pericolo non è che i computer inizino a pensare come gli uomini, ma che gli uomini inizino a pensare come i computer.", author: "Sydney J. Harris" },
+            { text: "Se torturi i dati abbastanza a lungo, confesseranno qualsiasi cosa.", author: "Ronald Coase" },
+            { text: "Gli algoritmi non ereditano solo la nostra intelligenza, specchiano perfettamente le nostre disuguaglianze.", author: "Cathy O'Neil" },
+            { text: "I dati non sono mai specchi neutri della realtà; sono artefatti di scelte umane e storiche.", author: "Proverbio Tecnologico Clinico" }
+        ];
+
+        const scenarios = [
+            { id: 1, title: "Il Trial Clinico 'Cardio-Equo'", type: "Trial Clinico Tradizionale (RCT)", standard: "HL7 FHIR & MedDRA / ICD-10", mission: "Validare la sicurezza e l'efficacia a lungo termine di una nuova molecola (CE-902) per l'ipertensione arteriosa prima della sottomissione del dossier registrativo all'EMA.", dataset: "Campione: N = 500 pazienti arruolati in 3 grandi ospedali metropolitani universitari.\nGenere: 50% uomini, 50% donne. Età Media: 52 ± 6 anni.\nVariabili: Pressione_Sistolica, Frequenza_Cardiaca, Creatinina_Sierica, Punteggio_Aderenza_Terapeutica.", criteria: "INCLUSIONE: Età 18-65; diagnosi di ipertensione primaria con sistolica stabile tra ≥140 e ≤159 mmHg.\nESCLUSIONE: Diabete tipo II non controllato (HbA1c > 8%); insufficienza renale cronica (eGFR < 60 ml/min/1.73m²); gravidanza; storia pregressa di ictus o poli-terapie aggressive.", coding: "Nel passaggio semantico obbligatorio da MedDRA a ICD-10, l'effetto collaterale 'emicrania severa pulsante con aura' (rilevato nel 22% delle donne) viene ridotto al codice generico R51 ('Cefalea'). Il tasso di abbandono (drop-out) femminile schizza al 22%, etichettato nei log FHIR come 'paziente non collaborativa'." },
+            { id: 2, title: "L'Algoritmo Predittivo 'SOS Riammissioni'", type: "Uso Secondario dei Dati Clinici", standard: "OMOP CDM & SNOMED-CT / ICD-9", mission: "Sviluppare un modello di Machine Learning integrato nel software ospedaliero per predire quali pazienti dimessi rischiano una riammissione non pianificata entro 30 giorni.", dataset: "Campione: 100.000 cartelle cliniche storiche (2015-2025) da un database centralizzato OMOP OHDSI.\nVariabili: Codice_Diagnosi_ICD-9-CM, Numero_Medicinali_Prescritti, Costo_Sanitario_Totale_12m.", criteria: "INCLUSIONE: Pazienti adulti (≥18 anni) dimessi vivi da reparti acuti; degenza minima di 48 ore.\nESCLUSIONE: Trasferimenti diretti ad altre strutture; cartelle con oltre il 30% di campi OMOP vuoti per mancanza di tracciamento digitale.", coding: "La conversione verso OMOP CDM ha rimosso le note in testo libero dei medici che segnalavano indigenza o isolamento sociale del paziente. L'IA finisce per utilizzare il 'Costo_Sanitario_Totale' come indicatore indiretto (proxy) di gravità. Poiché i pazienti indigenti spendono storicamente meno per motivi economici, l'IA deduce erroneamente che siano clinicamente sani." },
+            { id: 3, title: "Il Braccialetto 'Burnout-Stop'", type: "Dati Generati dai Pazienti & Wearable", standard: "HL7 FHIR Vital Signs Profile", mission: "Monitorare e attivare allarmi predittivi continui per prevenire crisi di burnout e stanchezza cronica tra il personale medico e infermieristico durante i turni di notte.", dataset: "Campione: Serie temporali biometriche continue estratte da 300 smartwatch commerciali distribuiti a personale volontario per 6 mesi.\nVariabili: HRV_ms (Variabilità della Frequenza Cardiaca), Efficienza_Sonno_%, Valore_Sensore_SpO2.", criteria: "INCLUSIONE: Dipendenti stabili assegnati a turni notturni nei reparti d'urgenza; firma del consenso biometrico.\nESCLUSIONE: Patologie cardiache note (es. fibrillazione); assenze dal lavoro superiori a 15 giorni consecutivi.", coding: "Il profilo FHIR 'Observation' non include parametri per calibrare l'hardware sul fototipo cutaneo. I sensori ottici PPG mostrano un errore sistematico del 18% (segnali assenti o alterati) sul personale con pelle scura o tatuaggi. Inoltre, chi sperimenta un reale burnout tende a smettere di caricare il dispositivo (Bias di Sopravvivenza)." },
+            { id: 4, title: "La Rete 'Onco-Share'", type: "Apprendimento Federato (IA Collaborativa)", standard: "Metadati Standard DICOM", mission: "Addestrare una rete neurale convoluzionale per lo screening automatico di noduli polmonari sospetti, integrando i sistemi PACS di 5 ospedali senza centralizzare le immagini.", dataset: "Campione: 50.000 scansioni TC del torace distribuite su nodi europei (Germania, Italia, Spagna).\nVariabili: Metadati DICOM come Produttore (Siemens/GE), Spessore_Sezione (1mm-5mm).", criteria: "INCLUSIONE: Scansioni TC eseguite su adulti (2020-2026); presenza di noduli isolati di diametro compreso tra 4mm e 30mm; referto strutturato.\nESCLUSIONE: Immagini con gravi artefatti da movimento; metadati DICOM obbligatori corrotti o assenti.", coding: "I nodi tedeschi ad alta risoluzione registrano una prevalenza di tumori del 65% (essendo centri oncologici avanzati). Il nodo italiano a bassa risoluzione (sezioni da 5mm) ha una prevalenza del 4%. L'algoritmo subisce un 'Bias di Aggregazione': impara a correlare la marca della macchina e lo spessore dell'immagine DICOM con la patologia, ignorando i marcatori biologici." },
+            { id: 5, title: "Registro Nazionale dell'Endometrio", type: "Registro di Patologia Nazionale", standard: "Mappatura SNOMED-CT ➡️ ICD-10", mission: "Condurre uno studio epidemiologico retrospettivo per identificare potenziali cluster territoriali e fattori di rischio ambientali legati all'endometriosi.", dataset: "Campione: 20.000 record estratti dal registro ministeriale delle esenzioni per patologia.\nVariabili: Età_alla_Diagnosi, Anno_Insorgenza_Sintomi, Metodo_Diagnostico (Laparoscopia: 90%), CAP_Residenza_Attuale.", criteria: "INCLUSIONE: Sesso biologico femminile; diagnosi certificata di endometriosi di grado III o IV rASRM.\nESCLUSIONE: Sospetto clinico ecografico senza conferma istologica o laparoscopica; dati di residenza anagrafica incompleti.", coding: "SNOMED-CT distingueva accuratamente l'endometriosi infiltrante profonda dalle cisti superficiali. La conversione forzata in ICD-10 riduce tutto al codice generico N80 ('Endometriosi'), annullando la possibilità di studiare i fenotipi gravi. Inoltre, il requisito diagnostico laparoscopico crea un Bias di Spettro, rappresentando solo chi risiede storicamente vicino a poli chirurgici avanzati." },
+            { id: 6, title: "Il Chatbot 'Bimbo-Respiro'", type: "Telemedicina e Triage con NLP", standard: "Estrazione Testo ➡️ SNOMED-CT via NLP", mission: "Addestrare un modello linguistico (LLM) specialistico per guidare i genitori nella valutazione d'urgenza di una crisi respiratoria pediatrica, suggerendo se recarsi o meno al Pronto Soccorso.", dataset: "Campione: 10.000 trascrizioni testuali e log di chiamate storiche registrate da ASL pilota ad alto reddito.\nVariabili: Testo_Trascritto, Punteggio_Urgenza_Assegnato_dal_Pediatra (Triage 1-3).", criteria: "INCLUSIONE: Chiamate o messaggi testuali per pazienti pediatrici (0-12 anni) con sintomi respiratori acuti; triage validato da un pediatra entro 2 ore.\nESCLUSIONE: Audio sotto i 128 kbps (fallimento della trascrizione automatica); interazioni interrotte prima dell'assegnazione del codice di gravità.", coding: "Il modello NLP è stato addestrato sui dati di genitori ad alta scolarizzazione che usano termini medici precisi. Di fronte a metafore popolari o espressioni dialettali (es: 'ha il fischio da gatto', 'balla la pancia'), l'NLP fallisce la mappatura semantica in SNOMED-CT e classifica i sintomi come a bassa priorità, causando gravi falsi negativi." },
+            { id: 7, title: "'OncoGenius' e la Biopsia Liquida", type: "Ricerca Genomica e Biobanche", standard: "Estensione Genomica OMOP (ClinVar/HGNC)", mission: "Identificare un pannello di varianti genomiche circolanti nel sangue (ctDNA) per predire la resistenza alla chemioterapia di prima linea in pazienti con adenocarcinoma del colon-retto.", dataset: "Campione: Profili di sequenziamento genomico esomico (WES) accoppiati a dati clinici di 5.000 pazienti di una biobanca europea.\nVariabili: Mappatura_WES, Risposta_Clinica_Recist, Questionario_Stile_Alimentare_Passato.", criteria: "INCLUSIONE: Diagnosi confermata di adenocarcinoma del colon-retto in stadio IV; prelievo effettuato prima della chemioterapia; follow-up di almeno 24 mesi.\nESCLUSIONE: Radioterapia estesa prima del prelievo; tumori sincroni di altra natura; ctDNA < 0.1% (sotto il limite di rilevamento).", coding: "L'89% dei campioni appartiene a individui caucasici. I database di riferimento ClinVar e HGNC classificano molte varianti tipiche di popolazioni asiatiche o africane come Varianti a Significato Incerto (VUS), escludendole dal modello predittivo. L'algoritmo finirà per discriminare le minoranze etniche. I questionari alimentari retrospettivi introducono inoltre un severo Bias di Memoria (Recall Bias)." },
+            { id: 8, title: "Il 'Triage Algoritmico' in Terapia Intensiva", type: "Sistema di Supporto Decisionale Clinico (CDSS)", standard: "ICD-11 & Monitoraggio Punteggio SOFA", mission: "Creare un sistema di supporto decisionale per i medici rianimatori, al fine di ottimizzare l'assegnazione dei posti letto in Terapia Intensiva durante le emergenze di saturazione ospedaliera.", dataset: "Campione: Cartelle cliniche e traiettorie emodinamiche di 12.000 pazienti transitati in terapia intensiva negli ultimi 15 anni.\nVariabili: Punteggio_SOFA, Età, Indice_Comorbidità_Charlson, Sopravvivenza_alla_Dimissione (0/1).", criteria: "INCLUSIONE: Ammissioni in terapia intensiva per insufficienza d'organo acuta (SOFA ≥ 2); dati emodinamici completi per le prime 24 ore.\nESCLUSIONE: Stato di morte cerebrale all'ingresso; ricoveri post-operatori programmati; marcatori temporali (timestamp) corrotti.", coding: "L'algoritmo definisce matematicamente il successo unicamente come 'sopravvivenza al momento della dimissione dall'ospedale'. Questo genera un Proxy Bias etico: ignora se il paziente muoia 48 ore dopo a casa o rimanga in stato vegetativo. Inoltre, l'IA assimila il Bias Storico dei medici che in passato privilegiavano i pazienti più giovani a parità di punteggio biologico SOFA." },
+            { id: 9, title: "'PharmaWatch' e i Social Media", type: "Farmacovigilanza Post-Marketing (NLP)", standard: "Web Mining ➡️ Mappatura MedDRA", mission: "Progettare un sistema di sorveglianza epidemiologica automatizzata per identificare tempestivamente reazioni avverse (ADR) rare e non documentate di un nuovo farmaco biologico (NeuroX).", dataset: "Campione: 50.000 post estratti da forum per pazienti (es. PatientsLikeMe) e social network.\nVariabili: Testo_del_Post, Punteggio_del_Sentiment, Numero_di_Interazioni, Mappatura_Termini_MedDRA.", criteria: "INCLUSIONE: Post contenenti la parola 'NeuroX' o il principio attivo; pubblicazioni tra il 2025 e il 2026; testo in lingua italiana o inglese.\nESCLUSIONE: Contenuti generati da bot, account aziendali o promozionali; messaggi composti da meno di 5 parole.", coding: "L'algoritmo soffre di Algorithmic Sentiment Bias: i pazienti affetti da sclerosi multipla utilizzano regolarmente parole come 'stanchezza estrema' per descrivere il decorso naturale della loro malattia, ma l'IA le associa erroneamente come reazioni avverse (ADR) direttamente causate dal NeuroX. Si innesca inoltre un Effetto Emulazione (Bandwagon) generato dal tweet allarmista di un influencer." },
+            { id: 10, title: "'Mamma Sicura' - L'App per la Preeclampsia", type: "Epidemiologia Digitale (mHealth / PGHD)", standard: "Questionari HL7 FHIR (QuestionnaireResponse)", mission: "Sviluppare un modello predittivo per identificare precocemente l'insorgenza della preeclampsia sfruttando i parametri di salute inseriti quotidianamente dalle pazienti.", dataset: "Campione: Il dataset si compone dei log giornalieri di 100.000 gravidanze monitorate attraverso l'applicazione mobile.\nVariabili: Pressione_Arteriosa_Auto_Riportata, Variazione_Peso_Settimanale, Sistema_Operativo_Smartphone.", criteria: "INCLUSIONE: Utenti attive tra la 12ª e la 36ª settimana di gestazione; inserimento dei dati pressori per almeno 5 giorni a settimana.\nESCLUSIONE: Disinstallazione dell'app prima del terzo trimestre; registrazioni contenenti dati biologicamente impossibili.", coding: "Il dataset è fortemente influenzato da un Bias di Selezione socio-economico, in quanto l'applicazione viene utilizzata prevalentemente da donne con alta scolarizzazione e smartphone di fascia alta. Sussiste anche un Bias di Misurazione: i misuratori di pressione (sfigmomanometri) domestici non sono calibrati e le pazienti tendono ad arrotondare i valori inseriti (es: scrivono sempre 120/80), mascherando micro-incrementi pressori patologici critici." }
+        ];
+
+        // Le carte mantengono i dati testuali, ma i costi verranno assegnati dinamicamente
+        const mitigations = [
+            { id: 1, name: "Campionamento Stratificato (Resampling)", cost: 0, desc: "Bilancia i dati delle minoranze o integra campioni clinici da biobanche certificate per compensare i gruppi sottorappresentati." },
+            { id: 2, name: "Rimozione Variabili Proxy (Feature Drop)", cost: 0, desc: "Elimina esplicitamente dal dataset le variabili economiche, geografiche o demografiche statisticamente correlate a bias discriminatori." },
+            { id: 3, name: "Calibrazione dell'Hardware", cost: 0, desc: "Imposta protocolli fisici di validazione e arricchisce i metadati tecnici per uniformare la lettura dei sensori su tutti i pazienti." },
+            { id: 4, name: "Vincolo di Equità (Fairness / Equalized Odds)", cost: 0, desc: "Forza l'algoritmo matematicamente ad avere lo stesso tasso di falsi positivi e falsi negativi tra tutti i sottogruppi demografici analizzati." },
+            { id: 5, name: "Modelli di IA Spiegabile (XAI)", cost: 0, desc: "Utilizza algoritmi trasparenti (es. SHAP) per verificare se l'IA stia analizzando l'effettiva biologia clinica o semplicemente i dettagli irrilevanti e lo sfondo delle immagini." },
+            { id: 6, name: "Revisione del Vocabolario", cost: 0, desc: "Integra all'interno del sistema di comprensione linguistica dizionari gergali, metafore popolari e varianti linguistiche locali." },
+            { id: 7, name: "Supervisione Umana (Art. 22 GDPR)", cost: 0, desc: "Il sistema di IA fornisce raccomandazioni, ma la decisione finale, il controllo clinico e la totale responsabilità legale rimangono al medico curante." },
+            { id: 8, name: "Stress-Test su Dati Esterni", cost: 0, desc: "Valida il modello su cartelle cliniche provenienti da un ospedale esterno e geograficamente diverso, al fine di smascherare l'overfitting (sovradattamento) locale." }
+        ];
+
+        const attacks = [
+            { id: 1, name: "Ispezione Garante IA (AI Act)", text: "Carenza di documentazione tecnica sulla mitigazione e il tracciamento dei bias nei dati storici. Violazione dell'Articolo 10 dell'AI Act. Lo sviluppo viene bloccato immediatamente!", counteredBy: [5, 7] },
+            { id: 2, name: "Trappola della Perdita Semantica", text: "Nel convertire le diagnosi verso codifiche standard più generiche avete perso la granularità necessaria. L'IA prende ora decisioni basate su dati 'schiacciati', danneggiando irreparabilmente l'analisi clinica dei casi rari.", counteredBy: [6, 8] },
+            { id: 3, name: "Ostacolo del Digital Divide", text: "Il vostro dataset di addestramento esclude strutturalmente le fasce vulnerabili della popolazione e i pazienti anziani privi di smartphone o connettività. Il Comitato Etico respinge il progetto.", counteredBy: [1] },
+            { id: 4, name: "Ricorso ex Articolo 22 del GDPR", text: "Un comitato di cittadini fa causa: l'algoritmo ha automatizzato la negazione di rimborsi per le cure senza offrire un controllo trasparente e privando il paziente del diritto all'intervento umano.", counteredBy: [7] },
+            { id: 5, name: "Il Paradosso di Simpson (Aggregazione)", text: "Avete unito indiscriminatamente i dati di ospedali di eccellenza e cliniche periferiche, senza normalizzare la prevalenza delle patologie. L'accuratezza statistica del modello si inverte e crolla nel mondo reale.", counteredBy: [8] },
+            { id: 6, name: "Allucinazione da Sensori Non Calibrati", text: "Un'indagine indipendente rileva che i sensori hardware utilizzati per raccogliere i dati di addestramento perdono precisione su specifiche conformazioni fisiche o fototipi. L'IA ha semplicemente imparato a misurare il 'rumore' strutturale.", counteredBy: [3] },
+            { id: 7, name: "Effetto Emulazione (Social Media)", text: "L'impennata di segnalazioni sintomatiche negative lette dall'IA non rifletteva un reale dato clinico o biologico, ma era un allarme artificiale innescato dal tweet virale di un influencer online. Avete bloccato un farmaco sicuro a causa di un falso allarme.", counteredBy: [5] },
+            { id: 8, name: "Bias Storico e Ritardo Temporale", text: "L'algoritmo fallisce clamorosamente sui dati del 2026, perché addestrato in passato su cartelle cliniche che seguivano linee guida mediche diagnostiche ormai superate e obsolete.", counteredBy: [1, 8] }
+        ];
+
+        const codexCategories = {
+            overload: { label: "Sovraccarico di Informazioni", color: "#0e7490" },
+            meaning:  { label: "Carenza di Contesto",       color: "#7c2d12" },
+            speed:    { label: "Necessità di Agire in Fretta",  color: "#b45309" },
+            memory:   { label: "Limiti della Memoria",          color: "#4c1d95" }
+        };
+
+        const fullCodexPool = [
+            { name: "Bias di Ancoraggio (Anchoring Bias)", cat: "overload" },
+            { name: "Effetto Cornice (Framing Effect)", cat: "overload" },
+            { name: "Illusione di Verità (Illusory Truth Effect)", cat: "overload" },
+            { name: "Effetto Mera Esposizione (Mere Exposure Effect)", cat: "overload" },
+            { name: "Bias di Conferma (Confirmation Bias)", cat: "overload" },
+            { name: "Euristica della Disponibilità (Availability Heuristic)", cat: "overload" },
+            { name: "Negligenza del Tasso di Base (Base Rate Fallacy)", cat: "overload" },
+            { name: "Effetto Von Restorff (Von Restorff Effect)", cat: "overload" },
+            { name: "Bias di Negatività (Negativity Bias)", cat: "overload" },
+            { name: "Bias Attenzionale (Attentional Bias)", cat: "overload" },
+            { name: "Effetto Bizzarria (Bizarreness Effect)", cat: "overload" },
+            { name: "Effetto Superiorità dell'Immagine (Picture Superiority Effect)", cat: "overload" },
+            { name: "Effetto Autoriferimento (Self-Reference Effect)", cat: "overload" },
+            { name: "Illusione della Frequenza (Frequency Illusion)", cat: "overload" },
+            { name: "Effetto Contesto (Context Effect)", cat: "overload" },
+            { name: "Illusione Monetaria (Money Illusion)", cat: "overload" },
+            { name: "Legge di Weber-Fechner (Weber–Fechner Law)", cat: "overload" },
+            { name: "Conservatorismo Cognitivo (Conservatism)", cat: "overload" },
+            { name: "Bias della Distinzione (Distinction Bias)", cat: "overload" },
+            { name: "Bias di Congruenza (Congruence Bias)", cat: "overload" },
+            { name: "Razionalizzazione Post-Acquisto (Post-Purchase Rationalization)", cat: "overload" },
+            { name: "Bias di Sostegno alla Scelta (Choice-Supportive Bias)", cat: "overload" },
+            { name: "Percezione Selettiva (Selective Perception)", cat: "overload" },
+            { name: "Effetto Aspettativa dell'Osservatore (Observer-Expectancy Effect)", cat: "overload" },
+            { name: "Bias dello Sperimentatore (Experimenter's Bias)", cat: "overload" },
+            { name: "Effetto Osservatore (Observer Effect)", cat: "overload" },
+            { name: "Bias dell'Aspettativa (Expectation Bias)", cat: "overload" },
+            { name: "Effetto Struzzo (Ostrich Effect)", cat: "overload" },
+            { name: "Validazione Soggettiva (Subjective Validation)", cat: "overload" },
+            { name: "Effetto dell'Influenza Continuata (Continued Influence Effect)", cat: "overload" },
+            { name: "Riflesso di Semmelweis (Semmelweis Reflex)", cat: "overload" },
+            { name: "Effetto Umorismo (Humor Effect)", cat: "overload" },
+            { name: "Effetto di Contrasto (Contrast Effect)", cat: "overload" },
+            { name: "Effetto Focalizzazione (Focusing Effect)", cat: "overload" },
+            { name: "Oblio Dipendente dal Contesto (Cue-Dependent Forgetting)", cat: "overload" },
+            { name: "Bias del Recente (Recency Illusion)", cat: "overload" },
+            { name: "Fallacia del Giocatore d'Azzardo (Gambler's Fallacy)", cat: "overload" },
+            { name: "Fallacia della Mano Calda (Hot-Hand Fallacy)", cat: "overload" },
+            { name: "Effetto Empatia Mancata (Empathy Gap)", cat: "overload" },
+            { name: "Bias di Omissione (Omission Bias)", cat: "overload" },
+            { name: "Bias di Gruppo (In-group Bias)", cat: "meaning" },
+            { name: "Effetto Alone (Halo Effect)", cat: "meaning" },
+            { name: "Bias di Stereotipizzazione (Stereotyping)", cat: "meaning" },
+            { name: "Correlazione Illusoria (Illusory Correlation)", cat: "meaning" },
+            { name: "Confabulazione (Confabulation)", cat: "meaning" },
+            { name: "Illusione del Raggruppamento (Clustering Illusion)", cat: "meaning" },
+            { name: "Insensibilità alla Dimensione del Campione (Insensitivity to Sample Size)", cat: "meaning" },
+            { name: "Negligenza della Probabilità (Neglect of Probability)", cat: "meaning" },
+            { name: "Fallacia Aneddotica (Anecdotal Fallacy)", cat: "meaning" },
+            { name: "Illusione di Validità (Illusion of Validity)", cat: "meaning" },
+            { name: "Fallacia dell'Uomo Mascherato (Masked Man Fallacy)", cat: "meaning" },
+            { name: "Errore di Attribuzione di Gruppo (Group Attribution Error)", cat: "meaning" },
+            { name: "Errore di Attribuzione Ultimo (Ultimate Attribution Error)", cat: "meaning" },
+            { name: "Essenzialismo Psicologico (Essentialism)", cat: "meaning" },
+            { name: "Fissità Funzionale (Functional Fixedness)", cat: "meaning" },
+            { name: "Effetto Credenziale Morale (Moral Credential Effect)", cat: "meaning" },
+            { name: "Ipotesi del Mondo Giusto (Just-World Hypothesis)", cat: "meaning" },
+            { name: "Argomento dalla Fallacia (Argument from Fallacy)", cat: "meaning" },
+            { name: "Bias dell'Autorità (Authority Bias)", cat: "meaning" },
+            { name: "Omogeneità dell'Outgroup (Out-group Homogeneity Bias)", cat: "meaning" },
+            { name: "Effetto Cross-Race (Cross-Race Effect)", cat: "meaning" },
+            { name: "Effetto Cheerleader (Cheerleader Effect)", cat: "meaning" },
+            { name: "Effetto Strada Ben Conosciuta (Well-Travelled Road Effect)", cat: "meaning" },
+            { name: "Sindrome del 'Non Inventato Qui' (Not Invented Here)", cat: "meaning" },
+            { name: "Svalutazione Reattiva (Reactive Devaluation)", cat: "meaning" },
+            { name: "Effetto Positività (Positivity Effect)", cat: "meaning" },
+            { name: "Contabilità Mentale (Mental Accounting)", cat: "meaning" },
+            { name: "Bias di Normalità (Normalcy Bias)", cat: "meaning" },
+            { name: "Fallacia dell'Appello alla Probabilità (Appeal to Probability Fallacy)", cat: "meaning" },
+            { name: "Legge di Murphy (Murphy's Law)", cat: "meaning" },
+            { name: "Effetto Subadditività (Subadditivity Effect)", cat: "meaning" },
+            { name: "Bias del Sopravvissuto (Survivorship Bias)", cat: "meaning" },
+            { name: "Bias a Somma Zero (Zero-Sum Bias)", cat: "meaning" },
+            { name: "Effetto Denominazione (Denomination Effect)", cat: "meaning" },
+            { name: "Illusione di Trasparenza (Illusion of Transparency)", cat: "meaning" },
+            { name: "Maledizione della Conoscenza (Curse of Knowledge)", cat: "meaning" },
+            { name: "Effetto Riflettore (Spotlight Effect)", cat: "meaning" },
+            { name: "Illusione dell'Agenzia Esterna (Illusion of External Agency)", cat: "meaning" },
+            { name: "Illusione dell'Intuito Asimmetrico (Illusion of Asymmetric Insight)", cat: "meaning" },
+            { name: "Bias di Automazione (Automation Bias)", cat: "speed" },
+            { name: "Effetto Carrozzone (Bandwagon Effect)", cat: "speed" },
+            { name: "Fallacia dei Costi Affogati (Sunk Cost Fallacy)", cat: "speed" },
+            { name: "Bias dello Status Quo (Status Quo Bias)", cat: "speed" },
+            { name: "Avversione alla Perdita (Loss Aversion)", cat: "speed" },
+            { name: "Bias di Sovrastima di Sé (Overconfidence Bias)", cat: "speed" },
+            { name: "Effetto Egocentrico (Egocentric Bias)", cat: "speed" },
+            { name: "Bias dell'Ottimismo (Optimism Bias)", cat: "speed" },
+            { name: "Bias della Desiderabilità Sociale (Social Desirability Bias)", cat: "speed" },
+            { name: "Effetto Terza Persona (Third-Person Effect)", cat: "speed" },
+            { name: "Effetto Forer / Barnum (Barnum Effect)", cat: "speed" },
+            { name: "Illusione del Controllo (Illusion of Control)", cat: "speed" },
+            { name: "Effetto Falso Consenso (False Consensus Effect)", cat: "speed" },
+            { name: "Effetto Dunning-Kruger (Dunning–Kruger Effect)", cat: "speed" },
+            { name: "Superiorità Illusoria (Illusory Superiority)", cat: "speed" },
+            { name: "Effetto Difficile-Facile (Hard-Easy Effect)", cat: "speed" },
+            { name: "Pareidolia (Pareidolia)", cat: "speed" },
+            { name: "Sconto Iperbolico (Hyperbolic Discounting)", cat: "speed" },
+            { name: "Appello alla Novità (Appeal to Novelty)", cat: "speed" },
+            { name: "Effetto Vittima Identificabile (Identifiable Victim Effect)", cat: "speed" },
+            { name: "Escalation dell'Impegno (Escalation of Commitment)", cat: "speed" },
+            { name: "Effetto Generazione (Generation Effect)", cat: "speed" },
+            { name: "Effetto IKEA (IKEA Effect)", cat: "speed" },
+            { name: "Bias del Rischio Zero (Zero-Risk Bias)", cat: "speed" },
+            { name: "Bias dell'Unità (Unit Bias)", cat: "speed" },
+            { name: "Effetto Pseudocertezza (Pseudocertainty Effect)", cat: "speed" },
+            { name: "Effetto Disposizione (Disposition Effect)", cat: "speed" },
+            { name: "Effetto Dotazione (Endowment Effect)", cat: "speed" },
+            { name: "Bias del Confronto Sociale (Social Comparison Bias)", cat: "speed" },
+            { name: "Effetto Esca (Decoy Effect)", cat: "speed" },
+            { name: "Reattanza Psicologica (Reactance)", cat: "speed" },
+            { name: "Effetto Boomerang (Reverse Psychology)", cat: "speed" },
+            { name: "Giustificazione del Sistema (System Justification)", cat: "speed" },
+            { name: "Effetto Ambiguità (Ambiguity Effect)", cat: "speed" },
+            { name: "Bias dell'Informazione (Information Bias)", cat: "speed" },
+            { name: "Bias della Credenza (Belief Bias)", cat: "speed" },
+            { name: "Effetto Rima come Ragione (Rhyme as Reason Effect)", cat: "speed" },
+            { name: "Legge della Banalità (Bike-Shedding Effect)", cat: "speed" },
+            { name: "Fallacia della Congiunzione (Conjunction Fallacy)", cat: "speed" },
+            { name: "Effetto Delmore (Delmore Effect)", cat: "speed" },
+            { name: "Senno di Poi (Hindsight Bias)", cat: "memory" },
+            { name: "Retrospezione Rosea (Rosy Retrospection)", cat: "memory" },
+            { name: "Regola del Picco-Fine (Peak-End Rule)", cat: "memory" },
+            { name: "Effetto Misinformazione (Misinformation Effect)", cat: "memory" },
+            { name: "Amnesia Digitale (Google Effect)", cat: "memory" },
+            { name: "Bias dell'Esito (Outcome Bias)", cat: "memory" },
+            { name: "Fortuna Morale (Moral Luck)", cat: "memory" },
+            { name: "Declinismo (Declinism)", cat: "memory" },
+            { name: "Effetto Telescopio (Telescoping Effect)", cat: "memory" },
+            { name: "Bias dell'Impatto (Impact Bias)", cat: "memory" },
+            { name: "Bias del Pessimismo (Pessimism Bias)", cat: "memory" },
+            { name: "Fallacia della Pianificazione (Planning Fallacy)", cat: "memory" },
+            { name: "Bias del Risparmio di Tempo (Time-Saving Bias)", cat: "memory" },
+            { name: "Bias Pro-Innovazione (Pro-Innovation Bias)", cat: "memory" },
+            { name: "Bias di Proiezione (Projection Bias)", cat: "memory" },
+            { name: "Bias di Restrizione (Restraint Bias)", cat: "memory" },
+            { name: "Bias di Auto-Coerenza (Self-Consistency Bias)", cat: "memory" },
+            { name: "Errata Attribuzione della Memoria (Misattribution of Memory)", cat: "memory" },
+            { name: "Confusione della Fonte (Source Confusion)", cat: "memory" },
+            { name: "Criptomnesia (Cryptomnesia)", cat: "memory" },
+            { name: "Falso Ricordo (False Memory)", cat: "memory" },
+            { name: "Suggestionabilità (Suggestibility)", cat: "memory" },
+            { name: "Effetto Spaziatura (Spacing Effect)", cat: "memory" },
+            { name: "Livellamento e Acutizzazione (Leveling and Sharpening)", cat: "memory" },
+            { name: "Effetto Lunghezza Lista (List-Length Effect)", cat: "memory" },
+            { name: "Disinteresse per la Durata (Duration Neglect)", cat: "memory" },
+            { name: "Effetto Modalità (Modality Effect)", cat: "memory" },
+            { name: "Inibizione della Memoria (Memory Inhibition)", cat: "memory" },
+            { name: "Effetto Primacy (Primacy Effect)", cat: "memory" },
+            { name: "Effetto Recency (Recency Effect)", cat: "memory" },
+            { name: "Effetto Posizione Seriale (Serial-Position Effect)", cat: "memory" },
+            { name: "Effetto Suffisso (Suffix Effect)", cat: "memory" },
+            { name: "Effetto Livelli di Elaborazione (Levels-of-Processing Effect)", cat: "memory" },
+            { name: "Effetto Testing (Testing Effect)", cat: "memory" },
+            { name: "Assenza Mentale (Absent-Mindedness)", cat: "memory" }
+        ];
+
+        const cognitiveBiasesPool = [
+            {
+                name: "Bias di Conferma (Confirmation Bias)",
+                cat: "overload",
+                desc: "La tendenza a ricercare, interpretare e ricordare le informazioni in modo che confermino le proprie ipotesi pregresse, ignorando attivamente le prove contrarie.",
+                case: "Un medico si convince rapidamente che un paziente abbia una polmonite basandosi su una lieve tosse, e focalizza la lettura della TC toracica solo sui lobi inferiori, non notando una grave embolia altrove.",
+                question: "Qual è il metodo scientifico corretto per mitigare il Bias di Conferma nell'analisi clinica dei dati?",
+                correct: "Progettare esperimenti con l'obiettivo esplicito di smentire (falsificare) l'ipotesi clinica iniziale.",
+                wrongs: [
+                    "Raccogliere esclusivamente record storici che validano l'efficacia del trattamento proposto.",
+                    "Aumentare il numero di analisti nel team scegliendo colleghi che condividono la medesima scuola di pensiero.",
+                    "Delegare la scelta delle variabili a un'IA senza prima supervisionare l'albero dei pesi statistici."
+                ]
+            },
+            {
+                name: "Effetto Ancoraggio (Anchoring Bias)",
+                cat: "overload",
+                desc: "L'ancoraggio si verifica quando i decisori si affidano in modo sproporzionato alla prima informazione ricevuta, lasciando che questa influenzi tutte le valutazioni successive.",
+                case: "Un valore di pressione arteriosa iniziale estremamente alto, generato da un sensore guasto, condiziona l'intero triage: il team continua a trattare il paziente per un'emergenza ipertensiva inesistente nonostante i controlli successivi risultino normali.",
+                question: "In sede di triage d'urgenza, come si neutralizza l'Effetto Ancoraggio dovuto alla prima diagnosi trascritta?",
+                correct: "Obbligare il medico a compilare esplicitamente una checklist di diagnosi differenziali alternative indipendenti.",
+                wrongs: [
+                    "Fidarsi ciecamente del primo valore numerico fornito dal dispositivo ospedaliero.",
+                    "Cambiare continuamente l'ipotesi clinica ad ogni minima oscillazione del monitor di reparto.",
+                    "Consultare immediatamente lo storico amministrativo dei rimborsi fiscali del paziente."
+                ]
+            },
+            {
+                name: "Bias di Automazione (Automation Bias)",
+                cat: "speed",
+                desc: "La propensione umana a favorire acriticamente i suggerimenti dei sistemi automatizzati rispetto a riscontri manuali o all'intuito clinico, ignorando eventuali segnali d'errore.",
+                case: "Un cardiologo approva frettolosamente un referto automatico di ECG che segnala 'ritmo normale', omettendo di ispezionare visivamente il tracciato che mostra un chiaro infarto acuto del miocardio.",
+                question: "Come si impedisce che il personale sanitario cada nel Bias di Automazione di fronte a un software diagnostico?",
+                correct: "Addestrare i clinici a contestare i suggerimenti dell'IA, imparando a leggere gli indicatori statistici di incertezza e confidenza.",
+                wrongs: [
+                    "Accettare passivamente i report del software ipotizzando che l'algoritmo sia nativamente infallibile.",
+                    "Rimuovere la supervisione medica e lasciare che il sistema invii direttamente le prescrizioni in farmacia.",
+                    "Utilizzare lo strumento informatico solo quando il reparto si trova in forte carenza di organico."
+                ]
+            },
+            {
+                name: "Fallacia dei Costi Affogati (Sunk Cost Fallacy)",
+                cat: "speed",
+                desc: "La tendenza a continuare a investire risorse (tempo, soldi, energie) in una scelta palesemente fallimentare, solo perché si è già speso molto per essa.",
+                case: "La direzione sanitaria insiste nell'implementare un algoritmo predittivo palesemente distorto verso i pazienti anziani, giustificandosi col fatto che lo sviluppo dura da tre anni e ha assorbito ingenti fondi ministeriali.",
+                question: "Un modello predittivo mostra bias severi dopo due anni di sviluppo estremamente costoso. Cosa impone il rigore scientifico?",
+                correct: "Interrompere immediatamente l'addestramento o scartare l'algoritmo, ignorando il budget già speso in passato.",
+                wrongs: [
+                    "Continuare a iniettare fondi nel modello difettoso sperando che l'Intelligenza Artificiale si corregga da sola col tempo.",
+                    "Nascondere i report negativi agli ispettori esterni per non perdere le successive tranche di finanziamento ministeriale.",
+                    "Modificare unicamente l'interfaccia grafica dell'applicazione per farla sembrare più sicura e moderna."
+                ]
+            },
+            {
+                name: "Euristica della Disponibilità (Availability Heuristic)",
+                cat: "overload",
+                desc: "La tendenza a stimare la probabilità di un evento basandosi sulla facilità con cui esempi simili affiorano alla memoria (spesso perché recenti, insoliti o molto traumatici).",
+                case: "Dopo aver affrontato un caso rarissimo e drammatico di encefalite, un neurologo inizia a prescrivere costose risonanze magnetiche a chiunque si presenti in reparto accusando un banale mal di testa stagionale.",
+                question: "Come si mitiga l'Euristica della Disponibilità che spinge a sovrastimare la frequenza di eventi clinici rari ma molto pubblicizzati?",
+                correct: "Ancorare le decisioni a rigorosi dati epidemiologici reali di prevalenza, anziché all'ultimo caso clinico di risonanza mediatica.",
+                wrongs: [
+                    "Sospendere i trattamenti ordinari per focalizzare l'intero reparto solo sulle emergenze descritte dai media in quel periodo.",
+                    "Chiedere un parere clinico esclusivamente ai colleghi che hanno appena vissuto lo stesso caso straordinario.",
+                    "Aumentare la sensibilità degli allarmi automatici sul monitor per ogni minimo sospetto clinico."
+                ]
+            },
+            {
+                name: "Negligenza del Tasso di Base (Base Rate Neglect)",
+                cat: "overload",
+                desc: "L'errore cognitivo di ignorare la prevalenza di base (frequenza reale) di una malattia nella popolazione, focalizzandosi solo sull'accuratezza del test diagnostico.",
+                case: "Un software genetico identifica una mutazione ultra-rara (1 persona su 1.000.000) con un'accuratezza del 99%. Il medico comunica erroneamente al paziente di avere il 99% di probabilità di essere malato, ignorando che i falsi positivi superano di gran lunga i veri positivi.",
+                question: "In che modo si evita la Negligenza del Tasso di Base quando si legge il risultato positivo di un test ad alta sensibilità per una patologia rarissima?",
+                correct: "Applicare il Teorema di Bayes considerando matematicamente la bassissima prevalenza reale della malattia nella popolazione.",
+                wrongs: [
+                    "Assumere che un test con sensibilità al 99% significhi letteralmente una probabilità del 99% che il singolo paziente sia malato.",
+                    "Ripetere immediatamente lo stesso identico test utilizzando una macchina hardware della medesima marca.",
+                    "Ignorare totalmente il risultato del test basando la prognosi solo sull'età anagrafica e l'aspetto del paziente."
+                ]
+            },
+            {
+                name: "Bias di Sovrastima di Sé (Overconfidence Bias)",
+                cat: "speed",
+                desc: "Una sovrastima sistematica e irrealistica delle proprie capacità decisionali, dell'accuratezza delle proprie conoscenze scientifiche e dell'infallibilità del proprio istinto clinico.",
+                case: "Un primario di chirurgia si rifiuta categoricamente di seguire la checklist digitale di sicurezza in sala operatoria, ritenendo che i suoi decenni di esperienza clinica lo rendano totalmente immune da sviste umane o dimenticanze.",
+                question: "Quale misura organizzativa riduce il Bias di Sovrastima di un medico senior che si affida esclusivamente al proprio intuito?",
+                correct: "Rendere obbligatorie per tutti le checklist chirurgiche strutturate e condurre audit standardizzati e ciechi sui tassi di complicanza.",
+                wrongs: [
+                    "Assegnargli un assistente robotico programmato per assecondare silenziosamente ogni sua scelta operativa in sala.",
+                    "Interrompere il tracciamento degli esiti post-operatori per non rovinare il clima di fiducia ed eccellenza nel reparto.",
+                    "Sostituire improvvisamente tutta la sua operatività manuale con un algoritmo a scatola chiusa (Black Box)."
+                ]
+            },
+            {
+                name: "Effetto Cornice (Framing Effect)",
+                cat: "overload",
+                desc: "La reazione psicologica e decisionale a una medesima informazione cambia drasticamente a seconda del modo in cui viene presentata (ad esempio, enfatizzando i guadagni piuttosto che le perdite).",
+                case: "Il Comitato Etico approva un nuovo algoritmo diagnostico se i dati vengono presentati vantando 'un tasso di successo del 95%', ma lo respinge se lo stesso identico algoritmo viene descritto come 'fallimentare nel 5% dei casi clinici'.",
+                question: "Come si contrasta l'Effetto Cornice quando si deve comunicare il tasso di rischio di un intervento ('90% sopravvivenza' contro '10% mortalità')?",
+                correct: "Presentare i dati quantitativi in modo neutrale e completo, mostrando contemporaneamente e in modo bilanciato sia le probabilità di successo che di insuccesso.",
+                wrongs: [
+                    "Mostrare esclusivamente lo scenario statistico più ottimistico per rassicurare emotivamente e psicologicamente il paziente.",
+                    "Utilizzare rappresentazioni grafiche fuorvianti per nascondere o minimizzare visivamente l'impatto delle percentuali negative.",
+                    "Escludere del tutto il paziente dal processo decisionale per evitare che stati d'ansia influenzino irrazionalmente la sua scelta."
+                ]
+            },
+            {
+                name: "Bias di Gruppo (In-group Bias)",
+                cat: "meaning",
+                desc: "La tendenza naturale a manifestare un trattamento di favore o una fiducia cieca e sproporzionata nei confronti dei membri del proprio gruppo sociale o della propria istituzione.",
+                case: "I ricercatori di un ospedale universitario di eccellenza rifiutano di convalidare e integrare il proprio algoritmo predittivo con le cartelle cliniche provenienti da ospedali provinciali, partendo dal presupposto non scientifico che i propri dati siano 'intrinsecamente più puliti e superiori'.",
+                question: "Come si disinnesca il Bias di Gruppo che porta un team di ricerca a fidarsi esclusivamente dei dataset estratti dal proprio istituto?",
+                correct: "Implementare protocolli obbligatori di validazione esterna incrociata su dataset multicentrici, coinvolgendo attivamente ospedali periferici o demograficamente differenti.",
+                wrongs: [
+                    "Rifiutare a priori l'integrazione di dati clinici esterni, sostenendo che gli standard metodologici del proprio dipartimento siano infallibili.",
+                    "Escludere gli altri ospedali dalla partecipazione alla rete federata per 'proteggere la purezza scientifica' dei modelli proprietari.",
+                    "Limitare l'addestramento dei modelli diagnostici di Intelligenza Artificiale utilizzando unicamente i dipendenti della clinica come campione."
+                ]
+            },
+            {
+                name: "Effetto Carrozzone (Bandwagon Effect)",
+                cat: "speed",
+                desc: "La tendenza ad allinearsi a una determinata credenza o linea di azione principalmente perché la maggioranza delle altre persone nel proprio gruppo sta facendo lo stesso, soffocando il pensiero critico individuale.",
+                case: "Durante un difficile consulto multidisciplinare, tre specialisti si accordano frettolosamente su una diagnosi clinica complessa. Il resto dell'equipe medica si allinea passivamente senza analizzare i dati, per puro spirito di conformismo.",
+                question: "Qual è una strategia organizzativa efficace per evitare l'Effetto Carrozzone quando un'intera equipe medica concorda in modo troppo rapido e unanime?",
+                correct: "Nominare formalmente e a rotazione un 'Avvocato del Diavolo' all'interno del team, col compito esplicito di mettere in dubbio il consenso e sostenere metodicamente tesi diagnostiche alternative.",
+                wrongs: [
+                    "Accettare e formalizzare immediatamente la decisione della maggioranza per tagliare i costi operativi e velocizzare i tempi di triage.",
+                    "Isolare o penalizzare formalmente i membri più giovani dell'equipe che osano esprimere dubbi o perplessità cliniche divergenti.",
+                    "Affidarsi in via definitiva e senza alcuna discussione alla diagnosi trascritta dal medico gerarchicamente superiore o dal primario."
+                ]
+            },
+            {
+                name: "Senno di Poi (Hindsight Bias)",
+                cat: "memory",
+                desc: "L'illusione psicologica per cui, una volta noto l'esito di un evento, tendiamo a percepirlo a posteriori come altamente prevedibile e inevitabile fin dall'inizio, alterando la nostra valutazione delle decisioni prese nel passato.",
+                case: "Durante un audit interno, la commissione disciplinare incolpa un medico per una grave e rara complicanza post-operatoria, affermando a posteriori che i minimi sintomi premonitori iniziali fossero 'prove palesi e inequivocabili di rischio', quando in realtà non lo erano.",
+                question: "Un paziente subisce un peggioramento imprevisto nonostante le corrette linee guida applicate. Come si impedisce all'audit clinico di cadere nella trappola del 'Senno di Poi'?",
+                correct: "Valutare la condotta clinica basandosi rigorosamente solo sulle informazioni, esami e sintomi che erano realmente a disposizione del medico nel momento esatto della decisione.",
+                wrongs: [
+                    "Giudicare l'operato diagnostico iniziale del medico alla luce di tutti i dati emersi nelle settimane successive, inclusa l'autopsia o l'esito avverso finale.",
+                    "Presumere automaticamente, in base al solo risultato negativo, che ci sia stata una grave imperizia o negligenza nella fase di primo accesso al pronto soccorso.",
+                    "Riscrivere parzialmente o alterare i report della cartella clinica originale per farli combaciare e apparire coerenti con la complicazione osservata a posteriori."
+                ]
+            }
+        ];
+
+        let teams = [];
+        let activeTeamIndex = null;
+        let currentScenario = null;
+        let selectedMitigations = [];
+        let currentAttack = null;
+        let lastBiasName = "";
+        let currentWheelRotation = 0;
+        let currentQuiz = null;
+
+        window.onload = function() {
+            const randomQ = quotesPool[Math.floor(Math.random() * quotesPool.length)];
+            document.getElementById('random-quote').innerText = `"${randomQ.text}"`;
+            document.getElementById('random-quote-author').innerText = `— ${randomQ.author}`;
+            drawSVGWheel();
+        };
+
+        function startGameSetup() {
+            GAME_SETTINGS.initialScore = parseInt(document.getElementById('set-initial').value) || 100;
+            GAME_SETTINGS.targetScore = parseInt(document.getElementById('set-target').value) || 0;
+            GAME_SETTINGS.wheelWin = parseInt(document.getElementById('set-wheel-win').value) || 5;
+            GAME_SETTINGS.wheelLoss = parseInt(document.getElementById('set-wheel-loss').value) || 5;
+            GAME_SETTINGS.scenarioWin = parseInt(document.getElementById('set-scen-win').value) || 15;
+            GAME_SETTINGS.scenarioLoss = parseInt(document.getElementById('set-scen-loss').value) || 10;
+            
+            GAME_SETTINGS.cardCostMin = parseInt(document.getElementById('set-card-min').value) || 2;
+            GAME_SETTINGS.cardCostMax = Math.max(GAME_SETTINGS.cardCostMin, parseInt(document.getElementById('set-card-max').value) || 9);
+
+            // Generazione randomica costi carte
+            mitigations.forEach(m => {
+                m.cost = Math.floor(Math.random() * (GAME_SETTINGS.cardCostMax - GAME_SETTINGS.cardCostMin + 1)) + GAME_SETTINGS.cardCostMin;
+            });
+
+            // Aggiornamento etichette interfaccia testuale
+            document.getElementById('btn-resolve-win').innerText = `Difesa Approvata (+${GAME_SETTINGS.scenarioWin}pt)`;
+            document.getElementById('btn-resolve-loss').innerText = `Respinta (-${GAME_SETTINGS.scenarioLoss}pt)`;
+            document.getElementById('lbl-wheel-win').innerText = `+${GAME_SETTINGS.wheelWin} PT`;
+            document.getElementById('lbl-wheel-loss').innerText = `-${GAME_SETTINGS.wheelLoss} PT`;
+
+            document.getElementById('splash-screen').classList.add('hidden');
+        }
+
+        function checkGameStatus(team) {
+            if (GAME_SETTINGS.targetScore > 0 && team.score >= GAME_SETTINGS.targetScore) {
+                endGameAndShowLeaderboard();
+                return true;
+            }
+            if (team.score <= 0) {
+                if (teams.length <= 1) {
+                    endGameAndShowLeaderboard();
+                } else {
+                    document.getElementById('elimination-modal-team-name').innerText = team.name;
+                    document.getElementById('elimination-modal').classList.remove('hidden');
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function switchTab(tabName) {
+            document.getElementById('tab-content-scenario').classList.add('hidden');
+            document.getElementById('tab-content-workspace').classList.add('hidden');
+            
+            const inactiveClass = "px-6 py-3 rounded-t-xl bg-slate-950 text-slate-500 hover:text-slate-300 font-bold text-sm transition border border-transparent";
+            document.getElementById('tab-btn-scenario').className = inactiveClass;
+            document.getElementById('tab-btn-workspace').className = inactiveClass;
+            
+            if(tabName === 'scenario') {
+                document.getElementById('tab-content-scenario').classList.remove('hidden');
+                document.getElementById('tab-btn-scenario').className = "px-6 py-3 rounded-t-xl bg-slate-800 text-emerald-400 font-bold text-sm transition border border-slate-700 border-b-0 shadow-sm";
+            } else {
+                document.getElementById('tab-content-workspace').classList.remove('hidden');
+                document.getElementById('tab-btn-workspace').className = "px-6 py-3 rounded-t-xl bg-slate-800 text-orange-400 font-bold text-sm transition border border-slate-700 border-b-0 shadow-sm";
+            }
+        }
+
+        function addTeam() {
+            const input = document.getElementById('team-name-input');
+            const name = input.value.trim();
+            if (!name) return;
+            teams.push({ name: name, score: GAME_SETTINGS.initialScore, scenario: null });
+            input.value = '';
+            renderTeams();
+            
+            const startBtn = document.getElementById('start-game-btn');
+            startBtn.disabled = false;
+            
+            if (teams.length === 1) {
+                startBtn.innerText = "🚀 AVVIA IL GIOCO";
+            } else {
+                startBtn.innerText = "🚀 SORTEGGIA SQUADRA E AVVIA";
+            }
+        }
+
+        function renderTeams() {
+            const container = document.getElementById('teams-list');
+            if (teams.length === 0) { container.innerHTML = '<p class="text-sm text-slate-400 italic text-center py-6">Nessuna squadra.</p>'; return; }
+            container.innerHTML = teams.map((t, idx) => `
+                <div id="team-card-${idx}" class="p-4 rounded-xl border transition text-slate-300 bg-slate-950 border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center gap-3">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-sm text-slate-100 truncate">${t.name}</h3>
+                            <p class="text-xs text-slate-400 truncate mt-1">${t.scenario ? t.scenario.title : 'Nessun caso assegnato'}</p>
+                        </div>
+                        <span class="font-mono text-sm font-bold text-orange-400 whitespace-nowrap bg-orange-950/30 px-2.5 py-1 rounded-md border border-orange-900/50">${t.score} PT</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setActiveTeam(index) {
+            activeTeamIndex = index;
+            renderActiveTeamFinalLook();
+            if (teams[index].scenario) {
+                loadScenario(teams[index].scenario);
+            } else {
+                clearScenarioView();
+            }
+        }
+
+        function runTeamRaffle() {
+            if (teams.length === 0) return;
+            document.getElementById('start-game-btn').disabled = true;
+            
+            if (teams.length === 1) {
+                activeTeamIndex = 0;
+                const drawnScen = scenarios[Math.floor(Math.random() * scenarios.length)];
+                teams[0].scenario = drawnScen;
+                renderActiveTeamFinalLook();
+                loadScenario(drawnScen);
+                return;
+            }
+            
+            let currentHighlight = 0;
+            let steps = 0;
+            const totalSteps = 15 + Math.floor(Math.random() * 10);
+            let pace = 60;
+
+            function cycle() {
+                for (let i = 0; i < teams.length; i++) {
+                    const card = document.getElementById(`team-card-${i}`);
+                    if (card) card.className = "p-4 rounded-xl border transition bg-slate-950 border-slate-700 text-slate-300 shadow-sm";
+                }
+
+                const activeCard = document.getElementById(`team-card-${currentHighlight}`);
+                if (activeCard) {
+                    activeCard.className = "p-4 rounded-xl border transition bg-orange-950/40 border-orange-500 text-orange-300 scale-[1.02] duration-75 shadow-lg shadow-orange-900/20";
+                }
+
+                steps++;
+                if (steps < totalSteps) {
+                    currentHighlight = (currentHighlight + 1) % teams.length;
+                    pace += 22;
+                    setTimeout(cycle, pace);
+                } else {
+                    activeTeamIndex = currentHighlight;
+                    
+                    const unassignedScenarios = scenarios.filter(s => !teams.some(t => t.scenario && t.scenario.id === s.id));
+                    const pool = unassignedScenarios.length > 0 ? unassignedScenarios : scenarios;
+                    const drawnScen = pool[Math.floor(Math.random() * pool.length)];
+                    teams[activeTeamIndex].scenario = drawnScen;
+                    
+                    renderActiveTeamFinalLook();
+                    loadScenario(drawnScen);
+                }
+            }
+            cycle();
+        }
+
+        function renderActiveTeamFinalLook() {
+            renderTeams();
+            const card = document.getElementById(`team-card-${activeTeamIndex}`);
+            if (card) {
+                card.className = "p-4 rounded-xl border transition bg-emerald-950/40 border-emerald-500 text-emerald-300 font-bold shadow-lg shadow-emerald-900/20";
+            }
+        }
+
+        function loadScenario(scen) {
+            currentScenario = scen;
+            selectedMitigations = [];
+            currentAttack = null;
+            
+            document.getElementById('scen-placeholder').classList.add('hidden');
+            document.getElementById('scen-content').classList.remove('hidden');
+            
+            document.getElementById('tabs-navigation').classList.remove('hidden');
+            switchTab('scenario');
+            
+            document.getElementById('scen-type').innerText = scen.type;
+            document.getElementById('scen-title').innerText = scen.title;
+            document.getElementById('scen-standard').innerText = `Standard: ${scen.standard}`;
+            document.getElementById('scen-mission').innerText = scen.mission;
+            document.getElementById('scen-dataset').innerText = scen.dataset;
+            document.getElementById('scen-criteria').innerText = scen.criteria;
+            document.getElementById('scen-coding').innerText = scen.coding;
+
+            document.getElementById('modal-team-name').innerText = teams[activeTeamIndex].name;
+            document.getElementById('modal-team-score').innerText = teams[activeTeamIndex].score + " PT";
+
+            const stoppedTitle = document.getElementById('wheel-stopped-title');
+            if (stoppedTitle) {
+                stoppedTitle.classList.add('opacity-0');
+                stoppedTitle.innerText = '';
+            }
+
+            document.getElementById('wheel-modal').classList.remove('hidden');
+            document.getElementById('modal-wheel-wrapper').classList.remove('hidden');
+            document.getElementById('quiz-zone').classList.add('hidden');
+            
+            document.getElementById('quiz-options-container').classList.remove('hidden');
+            document.getElementById('quiz-instruction-line').classList.remove('hidden');
+            document.getElementById('quiz-feedback-result').classList.add('hidden');
+            document.getElementById('quiz-feedback-result').innerHTML = '';
+            
+            document.getElementById('spin-btn').disabled = false;
+            lockWorkspace();
+            document.getElementById('mitigation-feedback').classList.add('hidden');
+            document.getElementById('attack-zone').innerHTML = `
+                <button onclick="launchAttack()" class="bg-orange-950/60 text-orange-400 border border-orange-500/40 hover:bg-orange-900/60 font-bold text-sm uppercase px-6 py-3 rounded-lg tracking-wider transition shadow-md">🔥 VALUTA</button>
+            `;
+            document.getElementById('game-status').innerHTML = `Turno: <span class="text-emerald-400 font-bold">${teams[activeTeamIndex].name}</span>`;
+        }
+
+        function clearScenarioView() {
+            currentScenario = null;
+            currentAttack = null;
+            document.getElementById('scen-placeholder').classList.remove('hidden');
+            document.getElementById('scen-content').classList.add('hidden');
+            document.getElementById('tabs-navigation').classList.add('hidden');            
+            document.getElementById('wheel-modal').classList.add('hidden');
+            document.getElementById('mitigation-feedback').classList.add('hidden');
+            document.getElementById('attack-zone').innerHTML = `
+                <button onclick="launchAttack()" class="bg-orange-950/60 text-orange-400 border border-orange-500/40 hover:bg-orange-900/60 font-bold text-sm uppercase px-6 py-3 rounded-lg tracking-wider transition shadow-md">🔥 VALUTA</button>
+            `;
+            lockWorkspace();
+        }
+
+        function drawSVGWheel() {
+            const svg = document.getElementById('svg-wheel');
+            svg.innerHTML = '';
+            const n = fullCodexPool.length;
+            const angleStep = 360 / n;
+            for (let i = 0; i < n; i++) {
+                const startAngle = i * angleStep - 90;
+                const endAngle = (i + 1) * angleStep - 90;
+                
+                const radStart = (startAngle * Math.PI) / 180;
+                const radEnd = (endAngle * Math.PI) / 180;
+                
+                const x1 = 50 + 46 * Math.cos(radStart);
+                const y1 = 50 + 46 * Math.sin(radStart);
+                const x2 = 50 + 46 * Math.cos(radEnd);
+                const y2 = 50 + 46 * Math.sin(radEnd);
+                
+                const largeArc = angleStep > 180 ? 1 : 0;
+                const pathData = `M 50 50 L ${x1} ${y1} A 46 46 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", pathData);
+                path.setAttribute("fill", codexCategories[fullCodexPool[i].cat].color);
+                path.setAttribute("stroke", "#94a3b8"); 
+                path.setAttribute("stroke-width", "0.25");
+                svg.appendChild(path);
+            }
+            
+            const cap = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            cap.setAttribute("cx", "50");
+            cap.setAttribute("cy", "50");
+            cap.setAttribute("r", "8");
+            cap.setAttribute("fill", "#cbd5e1"); 
+            cap.setAttribute("stroke", "#94a3b8");
+            cap.setAttribute("stroke-width", "1");
+            svg.appendChild(cap);
+        }
+
+        function spinTheWheel() {
+            const spinBtn = document.getElementById('spin-btn');
+            spinBtn.disabled = true; 
+
+            const availableBiases = cognitiveBiasesPool.filter(b => b.name !== lastBiasName);
+            const drawnBias = availableBiases[Math.floor(Math.random() * availableBiases.length)];
+            lastBiasName = drawnBias.name;
+
+            const idx = fullCodexPool.findIndex(b => b.name === drawnBias.name);
+            const n = fullCodexPool.length;
+            const angleStep = 360 / n;
+
+            const targetAngle = 360 - (idx * angleStep + angleStep / 2);
+            const additionalSpins = 7 * 360; 
+            const currentBase = Math.floor(currentWheelRotation / 360) * 360;
+            currentWheelRotation = currentBase + additionalSpins + targetAngle;
+
+            const wheelSvg = document.getElementById('svg-wheel');
+            
+            wheelSvg.style.transition = `transform ${WHEEL_TIMINGS.spinDuration / 1000}s cubic-bezier(0.05, 0.95, 0.1, 1)`;
+            wheelSvg.style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            const floatingContainer = document.getElementById('floating-biases');
+            if (floatingContainer) floatingContainer.innerHTML = '';
+
+            let biasInterval = setInterval(() => {
+                if (!floatingContainer) return;
+                const randB = fullCodexPool[Math.floor(Math.random() * fullCodexPool.length)];
+                const wordEl = document.createElement('div');
+                wordEl.innerText = randB.name.split(' (')[0];
+                wordEl.style.position = 'absolute';
+                wordEl.style.color = codexCategories[randB.cat].color;
+                wordEl.className = 'text-xs font-bold transition-all duration-500 opacity-0 transform translate-y-2 whitespace-nowrap font-mono bg-white/90 px-2 py-1 rounded shadow-md z-20 border border-slate-200';
+
+                const isLeft = Math.random() > 0.5;
+                
+                if (isLeft) {
+                    const leftPos = WHEEL_BOUNDARIES.leftAreaMinX + Math.random() * (WHEEL_BOUNDARIES.leftAreaMaxX - WHEEL_BOUNDARIES.leftAreaMinX);
+                    wordEl.style.left = `${leftPos}%`;
+                } else {
+                    const rightPos = WHEEL_BOUNDARIES.rightAreaMinRight + Math.random() * (WHEEL_BOUNDARIES.rightAreaMaxRight - WHEEL_BOUNDARIES.rightAreaMinRight);
+                    wordEl.style.right = `${rightPos}%`;
+                }
+                    
+                const y = WHEEL_BOUNDARIES.minY + Math.random() * (WHEEL_BOUNDARIES.maxY - WHEEL_BOUNDARIES.minY);
+                wordEl.style.top = `${y}%`;
+
+                floatingContainer.appendChild(wordEl);
+
+                setTimeout(() => {
+                    wordEl.classList.remove('opacity-0', 'translate-y-2');
+                    wordEl.classList.add('opacity-100', 'translate-y-0');
+                }, 30);
+
+                setTimeout(() => {
+                    wordEl.classList.remove('opacity-100');
+                    wordEl.classList.add('opacity-0', '-translate-y-2');
+                    setTimeout(() => wordEl.remove(), 400);
+                }, 700);
+                
+            }, WHEEL_TIMINGS.floatingSpawnRate);
+
+            setTimeout(() => {
+                clearInterval(biasInterval);
+            }, WHEEL_TIMINGS.floatingStopDelay);
+
+            setTimeout(() => {
+                const stoppedTitle = document.getElementById('wheel-stopped-title');
+                if (stoppedTitle) {
+                    stoppedTitle.innerText = drawnBias.name;
+                    stoppedTitle.classList.remove('opacity-0'); 
+                }
+
+                setTimeout(() => {
+                    const sameCategoryQuizzes = cognitiveBiasesPool.filter(q => q.cat === drawnBias.cat);
+                    const quiz = sameCategoryQuizzes.length > 0
+                        ? sameCategoryQuizzes[Math.floor(Math.random() * sameCategoryQuizzes.length)]
+                        : cognitiveBiasesPool[Math.floor(Math.random() * cognitiveBiasesPool.length)];
+
+                    document.getElementById('modal-wheel-wrapper').classList.add('hidden');
+                    if (stoppedTitle) stoppedTitle.classList.add('opacity-0');
+                    buildQuiz(drawnBias, quiz);
+                    
+                }, WHEEL_TIMINGS.quizRevealDelay); 
+
+            }, WHEEL_TIMINGS.spinDuration); 
+        }
+
+        function buildQuiz(drawnBias, quiz) {
+            currentQuiz = quiz; 
+            const categoryLabel = codexCategories[drawnBias.cat].label;
+            document.getElementById('quiz-bias-name').innerText = drawnBias.name;
+            
+            document.getElementById('bias-description').innerText = quiz.desc;
+            document.getElementById('bias-case').innerText = quiz.case;
+            document.getElementById('bias-question').innerText = `[${categoryLabel}] ${quiz.question}`;
+
+            let options = [
+                { text: quiz.correct, isCorrect: true },
+                ...quiz.wrongs.map(w => ({ text: w, isCorrect: false }))
+            ];
+            options.sort(() => Math.random() - 0.5);
+
+            const hiddenIndex = Math.floor(Math.random() * 4);
+            const container = document.getElementById('quiz-options-container');
+            
+            container.innerHTML = options.map((opt, idx) => {
+                if (idx === hiddenIndex) {
+                    return `
+                        <button onclick="checkQuizAnswer(${opt.isCorrect}, true)" class="bg-orange-50 border-2 border-dashed border-orange-500 hover:bg-orange-100 text-orange-900 font-bold text-sm p-4 rounded-xl transition text-left shadow-sm w-full leading-relaxed">
+                            ❓ OPZIONE NASCOSTA<br><span class="text-xs font-normal italic text-slate-600 mt-1 block">Se le altre tre sono false, la risposta corretta è questa.</span>
+                        </button>
+                    `;
+                } else {
+                    return `
+                        <button onclick="checkQuizAnswer(${opt.isCorrect}, false)" class="bg-white hover:bg-slate-50 text-slate-800 font-medium text-sm p-4 rounded-xl border border-slate-300 hover:border-slate-400 transition text-left leading-relaxed shadow-sm w-full">
+                            ${opt.text}
+                        </button>
+                    `;
+                }
+            }).join('');
+
+            document.getElementById('quiz-zone').classList.remove('hidden');
+        }
+
+        function checkQuizAnswer(isCorrect, isHidden) {
+            document.getElementById('quiz-options-container').classList.add('hidden');
+            document.getElementById('quiz-instruction-line').classList.add('hidden');
+            
+            const team = teams[activeTeamIndex];
+            if (isCorrect) {
+                team.score += GAME_SETTINGS.wheelWin;
+            } else {
+                team.score -= GAME_SETTINGS.wheelLoss;
+            }
+            renderTeams(); 
+            document.getElementById('modal-team-score').innerText = team.score + " PT"; 
+            
+            const feedbackPanel = document.getElementById('quiz-feedback-result');
+            feedbackPanel.classList.remove('hidden');
+            
+            let html = '';
+            if (isCorrect) {
+                html += `
+                    <div class="p-5 bg-emerald-50 border border-emerald-300 rounded-xl flex flex-col gap-3 shadow-inner">
+                        <div class="flex justify-between items-center">
+                            <span class="text-emerald-800 font-black text-xl flex items-center gap-2">🎯 Risposta corretta!</span>
+                            <span class="font-bold font-mono text-emerald-700 bg-emerald-200/50 px-2 py-1 rounded border border-emerald-300">+${GAME_SETTINGS.wheelWin} PT</span>
+                        </div>
+                `;
+                if (isHidden) {
+                    html += `
+                        <p class="text-sm text-slate-800 leading-relaxed pt-2 border-t border-emerald-200">
+                            <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-700 block mb-1">Contenuto dell'opzione nascosta svelato:</span>
+                            ${currentQuiz.correct}
+                        </p>
+                    `;
+                } else {
+                    html += `<p class="text-sm text-slate-700 leading-relaxed">Eccellente. Avete sventato la trappola psicologica e compreso la metodologia di mitigazione.</p>`;
+                }
+                html += `</div>`;
+            } else {
+                html += `
+                    <div class="p-5 bg-orange-50 border border-orange-300 rounded-xl flex flex-col gap-3 shadow-inner">
+                        <div class="flex justify-between items-center">
+                            <span class="text-orange-800 font-black text-xl flex items-center gap-2">💥 Risposta errata.</span>
+                            <span class="font-bold font-mono text-orange-700 bg-orange-200/50 px-2 py-1 rounded border border-orange-300">-${GAME_SETTINGS.wheelLoss} PT</span>
+                        </div>
+                        <p class="text-sm text-slate-800 leading-relaxed pt-2 border-t border-orange-200">
+                            <span class="text-xs uppercase tracking-wider font-extrabold text-orange-700 block mb-1">La contromisura scientifica esatta era:</span>
+                            <strong>${currentQuiz.correct}</strong>
+                        </p>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <button onclick="handleProceedAfterQuiz(${isCorrect})" class="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 font-bold py-4 rounded-xl text-sm uppercase tracking-widest transition shadow-md">
+                    Procedi ➔
+                </button>
+            `;
+            
+            feedbackPanel.innerHTML = html;
+        }
+
+        function handleProceedAfterQuiz(isCorrect) {
+            document.getElementById('quiz-feedback-result').classList.add('hidden');
+            document.getElementById('quiz-feedback-result').innerHTML = '';
+            
+            const team = teams[activeTeamIndex];
+            
+            if (checkGameStatus(team)) return; // Se vince o perde, ferma tutto
+            
+            if (isCorrect) {
+                unlockWorkspace();
+                document.getElementById('wheel-modal').classList.add('hidden');
+            } else {
+                document.getElementById('wheel-modal').classList.add('hidden');
+                passTurn();
+            }
+        }
+
+        function lockWorkspace() { document.getElementById('workspace').classList.add('opacity-20', 'pointer-events-none'); }
+
+        function unlockWorkspace() {
+            document.getElementById('workspace').classList.remove('opacity-20', 'pointer-events-none');
+            const deck = document.getElementById('mitigation-deck');
+            
+            deck.innerHTML = mitigations.map(m => `
+                <label class="flex items-start gap-3 bg-slate-950 p-4 rounded-xl border border-slate-700 cursor-pointer hover:border-emerald-500 hover:bg-slate-900 transition shadow-sm w-full">
+                    <input type="checkbox" value="${m.id}" onchange="toggleMitigation(${m.id})" class="mt-1 w-4 h-4 accent-emerald-500 rounded cursor-pointer shrink-0">
+                    <div class="flex-1 text-sm leading-relaxed">
+                        <div class="flex justify-between items-start gap-2">
+                            <span class="font-bold text-slate-100">${m.name}</span>
+                            <span class="text-xs font-mono font-bold text-orange-400 bg-orange-950/40 px-2 py-0.5 rounded border border-orange-500/30 whitespace-nowrap">-${m.cost} PT</span>
+                        </div>
+                        <span class="text-slate-400 text-xs mt-1 block">${m.desc}</span>
+                    </div>
+                </label>
+            `).join('');
+        }
+
+        function toggleMitigation(id) {
+            const team = teams[activeTeamIndex];
+            const cost = mitigations.find(m => m.id === id).cost;
+
+            if (selectedMitigations.includes(id)) {
+                selectedMitigations = selectedMitigations.filter(mId => mId !== id);
+                team.score += cost;
+            } else {
+                if (team.score - cost < 0) {
+                    const checkedEl = document.querySelector(`#mitigation-deck input[value="${id}"]`);
+                    if (checkedEl) checkedEl.checked = false;
+                    return;
+                }
+
+                if (selectedMitigations.length >= 3) {
+                    const checkedEl = document.querySelector(`#mitigation-deck input[value="${id}"]`);
+                    if (checkedEl) checkedEl.checked = false;
+                    return;
+                }
+                selectedMitigations.push(id);
+                team.score -= cost;
+            }
+            
+            renderTeams(); 
+            evaluateMitigations();
+        }
+
+        function passTurn() {
+            activeTeamIndex = (activeTeamIndex + 1) % teams.length;
+            renderActiveTeamFinalLook();
+            
+            const drawnScen = scenarios[Math.floor(Math.random() * scenarios.length)];
+            teams[activeTeamIndex].scenario = drawnScen;
+            
+            loadScenario(drawnScen);
+        }
+
+        function launchAttack() {
+            const checkboxes = document.querySelectorAll('#mitigation-deck input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.disabled = true;
+                cb.parentElement.classList.remove('cursor-pointer', 'hover:border-emerald-500', 'hover:bg-slate-900');
+                cb.parentElement.classList.add('opacity-50', 'cursor-not-allowed', 'border-slate-800');
+            });
+
+            currentAttack = attacks[Math.floor(Math.random() * attacks.length)];
+            document.getElementById('attack-zone').innerHTML = `
+                <div class="text-left bg-slate-950 p-5 rounded-xl border border-orange-500/30 text-sm shadow-inner">
+                    <h4 class="font-bold text-orange-400 uppercase tracking-widest mb-2">💥 ISPEZIONE: ${currentAttack.name}</h4>
+                    <p class="text-slate-300 font-mono text-sm leading-relaxed">${currentAttack.text}</p>
+                </div>
+            `;
+            evaluateMitigations();
+        }
+
+        function evaluateMitigations() {
+            if (!currentAttack) return;
+            
+            const matchingIds = selectedMitigations.filter(id => currentAttack.counteredBy.includes(id));
+            const isCountered = matchingIds.length > 0;
+            const feedbackZone = document.getElementById('mitigation-feedback');
+            feedbackZone.classList.remove('hidden');
+            
+            if (isCountered) {
+                const matchingNames = mitigations.filter(m => matchingIds.includes(m.id)).map(m => m.name).join(', ');
+                feedbackZone.innerHTML = `
+                    <div class="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-4 text-sm text-emerald-300 flex flex-col gap-2 shadow-sm">
+                        <span class="font-bold uppercase tracking-wider flex items-center gap-2">🛡️ ANALISI DI CONFORMITÀ: IDONEA</span>
+                        <p class="text-slate-300 leading-relaxed">Le mitigazioni selezionate (<strong>${matchingNames}</strong>) neutralizzano l'attacco. Consigliato: approvare la difesa!</p>
+                    </div>
+                `;
+            } else {
+                const requiredNames = currentAttack.counteredBy.map(id => mitigations.find(m => m.id === id).name).join(' oppure ');
+                feedbackZone.innerHTML = `
+                    <div class="bg-orange-950/30 border border-orange-500/30 rounded-xl p-4 text-sm text-orange-300 flex flex-col gap-2 shadow-sm">
+                        <span class="font-bold uppercase tracking-wider flex items-center gap-2">🚨 ANALISI DI CONFORMITÀ: RESPINTA</span>
+                        <p class="text-slate-300 leading-relaxed">Nessuna contromisura efficace trovata. Questo attacco richiede: <br><strong class="text-slate-100 mt-1 block">${requiredNames}</strong></p>
+                    </div>
+                `;
+            }
+        }
+
+        function resolveTurn(success) {
+            if (activeTeamIndex === null) return;
+            
+            if (success) { teams[activeTeamIndex].score += GAME_SETTINGS.scenarioWin; } 
+            else { teams[activeTeamIndex].score -= GAME_SETTINGS.scenarioLoss; }
+            
+            renderTeams();
+
+            if (checkGameStatus(teams[activeTeamIndex])) return; // Se vince o perde, ferma tutto
+
+            passTurn();
+        }
+
+        function continueGameAfterElimination() {
+            document.getElementById('elimination-modal').classList.add('hidden');
+            teams.splice(activeTeamIndex, 1);
+            
+            if (teams.length === 0) {
+                endGameAndShowLeaderboard();
+                return;
+            }
+            
+            activeTeamIndex = activeTeamIndex % teams.length;
+            renderActiveTeamFinalLook();
+            
+            const drawnScen = scenarios[Math.floor(Math.random() * scenarios.length)];
+            teams[activeTeamIndex].scenario = drawnScen;
+            loadScenario(drawnScen);
+        }
+
+        function endGameAndShowLeaderboard() {
+            document.getElementById('elimination-modal').classList.add('hidden');
+            
+            teams.sort((a, b) => b.score - a.score);
+            
+            const listEl = document.getElementById('leaderboard-list');
+            listEl.innerHTML = teams.map((t, i) => {
+                let medal = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '🔹'));
+                let styleClass = i === 0 
+                    ? 'bg-emerald-950/40 border-emerald-500 text-emerald-300 scale-[1.02] shadow-lg shadow-emerald-900/20' 
+                    : 'bg-slate-950 border-slate-700 text-slate-300';
+                    
+                return `
+                    <div class="p-4 rounded-xl border flex justify-between items-center gap-3 ${styleClass}">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${medal}</span>
+                            <span class="font-bold text-lg">${t.name}</span>
+                        </div>
+                        <span class="font-mono text-xl font-black ${i === 0 ? 'text-emerald-400' : 'text-orange-400'}">${t.score} PT</span>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
